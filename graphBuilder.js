@@ -18,10 +18,24 @@ function graph_draw(){
     background(220);
     let arestas = Input.value().split(",");
 
+    let x = 50;
+    let y = 50;
+    let diametro = 25;
     for(let i = 0; i < arestas.length; i++){
             let par = arestas[i].split("-");
-            let a = parseInt(par[0].trim());
-            let b = parseInt(par[1].trim());
-            text(`Vértice 1: ${a} - Vértice 2: ${b}`, 20, 50 + (i * 20));
+            for(let v of par){
+            //Circulo
+            fill(255); 
+            stroke(0); 
+            circle(x, y, diametro);
+            //Texto
+            fill(0); 
+            textSize(10);
+            textAlign(CENTER, CENTER); 
+            text(v.trim(), x, y);
+            x+= 50;
+        }
+        x = 50;
+        y += 50;
     }
 }
