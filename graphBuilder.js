@@ -53,14 +53,13 @@ function graph_draw(){
     const vertices_ordenados = [...vertices_set].sort((a, b) => a - b);
     
     // Configura posição inicial dos pontos
-    let x = 50;
-    let y = 50;
     Positions = new Map();
     for(let i = 0; i < vertices_ordenados.length; i++){
         let v = vertices_ordenados[i];
+        let max = 450; let min = 50;
+        let x = Math.floor(Math.random() * (max - min + 1)) + min;
+        let y = Math.floor(Math.random() * (max - min + 1)) + min;
         Positions.set(v, createVector(x, y));
-        x+= 50;
-        y+= 10;
     }
     
     // Desenho aresta
