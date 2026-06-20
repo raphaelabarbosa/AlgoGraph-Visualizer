@@ -14,6 +14,8 @@ function setup(){
 
     layoutRadio.option('random', 'Random');
     layoutRadio.option('layer', 'Layered');
+    layoutRadio.option('F&R', 'Fruchterman & Reingold');
+    
 
     layoutRadio.selected('random'); // padrão
 
@@ -105,6 +107,110 @@ function graph_draw(){
         }
     }
 
+    const fr_vertices = () => {
+        //Iniciar posições randômicas;
+        random_vertices();
+        
+        let k = 35; //spring lenght
+        let temp = 8.5; //Temp
+
+       for(let t = 0; t < 1000; t++){
+
+            //Mapa de deslocamento
+            let disp = new Map(); 
+            for (const v of adj_map.keys()) { 
+                disp.set(v, { x: 0, y: 0 }); 
+            }
+
+            //Cálculo da força de repulsão
+            for (const v of adj_map.keys()) {
+                for (const u of adj_map.keys()) {
+
+                    if(v == u) continue;
+
+                    //Posições
+                    let pv = pos.get(v); 
+                    let pu = pos.get(u); 
+
+                    //Vetor
+                    let dx = pv.x - pu.x; 
+                    let dy = pv.y - pu.y;
+
+                    //Distância euclidiana
+                    let dist = max(sqrt(dx*dx + dy*dy),0.01);
+
+                    //Força de repulsão em v por u
+                    let force = (k*k)/dist;
+                    let dx_un = dx/dist;
+                    let dy_un = dy/dist;
+
+                    disp.get(v).x += dx_un * force;
+                    disp.get(v).y += dy_un * force;
+                }
+            }
+
+            //Cálculo da força de atração
+            for (const [v, vizinhos] of adj_map) {
+                for (const viz of vizinhos) {
+                    if(v < viz){
+                        //Posições
+                        let pv = pos.get(v); 
+                        let pviz = pos.get(viz); 
+
+                        //Vetor
+                        let dx = pv.x - pviz.x; 
+                        let dy = pv.y - pviz.y;
+
+                        //Distância euclidiana
+                        let dist = max(sqrt(dx*dx + dy*dy),0.01);
+
+                        //Força de atração entre v e viz
+                        let force = (dist*dist)/k;
+                        let dx_un = dx/dist;
+                        let dy_un = dy/dist;
+
+                        disp.get(v).x -= dx_un * force; 
+                        disp.get(v).y -= dy_un * force; 
+                        disp.get(viz).x += dx_un * force; 
+                        disp.get(viz).y += dy_un * force;
+                    }
+                }
+            }
+
+            //Atualização das posições
+            for (const v of adj_map.keys()) {
+
+                let dx =  disp.get(v).x;
+                let dy = disp.get(v).y;
+                let norm = sqrt((dx*dx)+(dy*dy));
+
+                if(norm > 0){
+                    let move = min(temp,norm);
+                    let dx_un = dx/norm;
+                    let dy_un = dy/norm;
+
+                    pos.get(v).x += dx_un*move;
+                    pos.get(v).y += dy_un*move;
+
+                    //Limita a posição para dentro do canvas
+                    pos.get(v).x = constrain(
+                        pos.get(v).x,
+                        25,
+                        width - 25
+                    );
+
+                    pos.get(v).y = constrain(
+                        pos.get(v).y,
+                        25,
+                        height - 25
+                    );
+                }
+            }
+            //CoolDown
+            temp *= 0.965;
+       }
+    }
+
     const draw_edge = () =>{
         //Desenha as arestas O(n+m)
         for (const [v, vizinhos] of adj_map) {
@@ -139,6 +245,9 @@ function graph_draw(){
     }
     else if (selectedLayout === 'layer') {
         layer_vertices();
+    }
+    else if (selectedLayout === 'F&R') {
+        fr_vertices();
     }
 
     draw_edge();
