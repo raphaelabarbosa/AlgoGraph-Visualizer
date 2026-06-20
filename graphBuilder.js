@@ -1,4 +1,7 @@
 let Input;
+let adj_map = new Map(); //Map de adjacência
+let pos = new Map(); //Posições dos vértices
+let color = new Map();
 
 function setup(){
     let canvas = createCanvas(500,500);
@@ -19,19 +22,20 @@ function setup(){
 
     layoutRadio.selected('random'); // padrão
 
-    Button = createButton('submit');
-    Button.parent('graph-builder-container');
+    Button_draw = createButton('draw');
+    Button_draw.parent('graph-builder-container');
+    Button_draw.mousePressed(draw_graph);
 
-    Button.mousePressed(graph_draw);
+    Button_dfs = createButton('DFS');
+    Button_dfs.parent('graph-builder-container');
+    Button_dfs.mousePressed(draw_dfs);
 }
 
-function graph_draw(){
-    background(220);
-
+function input_processing(){
     let graph_input = Input.value().split(","); //Separando valores do input em um array: string "n, v1-v2, v3-v2,...""
-    let adj_map = new Map(); //Map de adjacência
-    let pos = new Map(); //Posições dos vértices
-    let selectedLayout = layoutRadio.value(); //Tipo de geração grafos
+    adj_map.clear(); 
+    pos.clear();
+    color.clear();
 
     // let n = parseInt(graph_input[0].trim()); //Número de vértices
     //console.log(n);
@@ -52,8 +56,10 @@ function graph_draw(){
         adj_map.get(edge[0]).push(edge[1]);
         adj_map.get(edge[1]).push(edge[0]);
     }
+}
 
-    //Funções //////////////////////////////////
+function set_pos(){
+    let selectedLayout = layoutRadio.value(); //Tipo de geração grafos
 
     const layer_vertices = () =>{
         let vis = new Set();
@@ -211,6 +217,20 @@ function graph_draw(){
        }
     }
 
+    if (selectedLayout === 'random') {
+        random_vertices();
+    }
+    else if (selectedLayout === 'layer') {
+        layer_vertices();
+    }
+    else if (selectedLayout === 'F&R') {
+        fr_vertices();
+    }
+}
+
+function render_graph(){
+    background(220);
+
     const draw_edge = () =>{
         //Desenha as arestas O(n+m)
         for (const [v, vizinhos] of adj_map) {
@@ -230,7 +250,7 @@ function graph_draw(){
         let diametro = 25;
         for (const v of adj_map.keys()) {
             let p = pos.get(v);
-            fill(255); 
+            fill(color.get(v)); 
             stroke(0);
             circle(p.x, p.y, diametro);
             fill(0); 
@@ -240,16 +260,26 @@ function graph_draw(){
         }
     }
 
-    if (selectedLayout === 'random') {
-        random_vertices();
-    }
-    else if (selectedLayout === 'layer') {
-        layer_vertices();
-    }
-    else if (selectedLayout === 'F&R') {
-        fr_vertices();
-    }
-
     draw_edge();
     draw_vertices();
+}
+
+function draw_graph(){
+    input_processing();
+    //Deixa todas as cores iguais.
+    for (const v of adj_map.keys()) {
+            color.set(v, 255);
+    }
+    set_pos();
+    render_graph();
+}
+
+function draw_dfs(){
+    input_processing();
+    //Deixa todas as cores iguais.
+    for (const v of adj_map.keys()) {
+            color.set(v, 255);
+    }
+    set_pos();
+    render_graph();
 }
