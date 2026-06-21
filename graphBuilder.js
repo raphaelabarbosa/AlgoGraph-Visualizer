@@ -75,12 +75,12 @@ function input_processing(){
             adj_map.set(edge[0], []);
         }
 
-        if (!adj_map.has(edge[1])) {
+        if (edge.length === 2 && !adj_map.has(edge[1])) {
             adj_map.set(edge[1], []);
         }
 
-        adj_map.get(edge[0]).push(edge[1]);
-        adj_map.get(edge[1]).push(edge[0]);
+        if (edge.length === 2) adj_map.get(edge[0]).push(edge[1]);
+        if (edge.length === 2) adj_map.get(edge[1]).push(edge[0]);
     }
 }
 
