@@ -138,7 +138,7 @@ function set_pos(){
         //Iniciar posições randômicas;
         random_vertices();
         
-        let k = 50; //spring lenght
+        let k = 70; //spring lenght
         let temp = 8.5; //Temp
 
        for(let t = 0; t < 1000; t++){
