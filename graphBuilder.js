@@ -40,6 +40,11 @@ function setup(){
     Button_draw.mousePressed(draw_graph);
 
     //Animações
+
+    Button_dfs = createButton('Components');
+    Button_dfs.parent('graph-builder-container');
+    Button_dfs.mousePressed(draw_components);
+
     Button_dfs = createButton('DFS');
     Button_dfs.parent('graph-builder-container');
     Button_dfs.mousePressed(draw_dfs);
@@ -442,6 +447,33 @@ function draw_bfs(){
     for (const x of adj_map.keys()) {
         if (!vis.has(x)) {
             bfs(x);
+        }
+    }
+}
+
+function draw_components(){
+    
+    //Limpa as animações
+    animationSteps = [];
+    currentStep = 0;
+
+    let vis = new Set();
+
+    const dfs = (v, cor) => {
+        vis.add(v);
+        color.set(v, cor);
+        for (const viz of adj_map.get(v)) {
+            if (!vis.has(viz)) {
+                dfs(viz, cor);
+            }
+        }
+    };
+        
+
+    for (const x of adj_map.keys()) {
+        let cor = '#' + Math.floor(Math.random()*16777215).toString(16);;
+        if (!vis.has(x)) {
+            dfs(x, cor);
         }
     }
 }
