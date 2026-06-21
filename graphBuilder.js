@@ -1,8 +1,14 @@
 let Input;
 let adj_map = new Map(); //Map de adjacência
 let pos = new Map(); //Posições dos vértices
-let color = new Map();
-let id = 0;
+let color = new Map(); //Cor de cada vértice
+
+//Lista de steps da animação
+let animationSteps = [];
+let currentStep = 0;
+
+let lastUpdate = 0;
+let delay = 1000; // ms animação
 
 function setup(){
     let canvas = createCanvas(500,500);
@@ -20,13 +26,14 @@ function setup(){
     layoutRadio.option('layer', 'Layered');
     layoutRadio.option('F&R', 'Fruchterman & Reingold');
     
-
     layoutRadio.selected('random'); // padrão
 
+    //Desenhar grafo
     Button_draw = createButton('Draw');
     Button_draw.parent('graph-builder-container');
     Button_draw.mousePressed(draw_graph);
 
+    //Animações
     Button_dfs = createButton('DFS');
     Button_dfs.parent('graph-builder-container');
     Button_dfs.mousePressed(draw_dfs);
@@ -270,135 +277,190 @@ function render_graph(){
 }
 
 function draw_graph(){
+    //Processa o input atual
     input_processing();
+    //Seta as posições dos vértices pelo tipo de geração atual
     set_pos();
 
-    //Deixa todas as cores iguais.
-    for (const v of adj_map.keys()) {
-            color.set(v, 255);
-    }
-    render_graph();
-}
-
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-async function draw_dfs(){
-    // id++;
-    // const minha_id = id;
-
-    input_processing();
-    set_pos();
-
-    
+    //Coloca todo o grafo em cinza
     for (const v of adj_map.keys()) {
         color.set(v, 255);
     }
 
-    // if(minha_id !== id) return;
-    render_graph();
-    await sleep(1000);
-    // if (minha_id !== id) return;
+    //Limpa as animações
+    animationSteps = [];
+    currentStep = 0;
+}
+
+function draw_dfs(){
+
+    //Limpa as animações
+    animationSteps = [];
+    currentStep = 0;
+
+    //Coloca o grafo na cor padrão
+    for (const v of adj_map.keys()) {
+        color.set(v, 255);
+    }
 
     let vis = new Set();
 
-    const dfs = async (v,pai) => {
+    const dfs = (v, pai) => {
         vis.add(v);
 
-        //Vértice atual
-        color.set(v, "green");
-        // if(minha_id !== id) return;
-        render_graph();
-        await sleep(1000);
-        // if (minha_id !== id) return;
+        // Step de animação: Vértice atual verde e pai em processamento azul
+        if (pai != null) {
+            animationSteps.push([
+                {
+                    vertex: pai,
+                    color: "blue"
+                },
+                {
+                    vertex: v,
+                    color: "green"
+                }
+            ]);
+        }
+        else {
+            animationSteps.push([
+                {
+                    vertex: v,
+                    color: "green"
+                }
+            ]);
+        }
 
         for (const viz of adj_map.get(v)) {
             if (!vis.has(viz)) {
-                //Em processamento
-                color.set(v, "blue");
-                await dfs(viz,v);
+                dfs(viz, v);
             }
         }
 
-        //Finalizado
-        if(pai != null) color.set(pai, "green");
-        color.set(v, "red");
-        // if(minha_id !== id) return;
-        render_graph();
-        await sleep(1000);
-        // if (minha_id !== id) return;
+        //Step de animação: Vértice v finalizado, vermelho, e pai próximo atual, verde.
+        if (pai != null) {
+            animationSteps.push([
+                {
+                    vertex: pai,
+                    color: "green"
+                },
+                {
+                    vertex: v,
+                    color: "red"
+                }
+            ]);
+        }
+        else {
+            animationSteps.push([
+                {
+                    vertex: v,
+                    color: "red"
+                }
+            ]);
+        }
     };
+        
 
     for (const x of adj_map.keys()) {
-        // if(minha_id !== id) return;
         if (!vis.has(x)) {
-            await dfs(x,null);
+            dfs(x, null);
         }
     }
 }
 
-async function draw_bfs(){
-    // id++;
-    // const minha_id = id;
+function draw_bfs(){
 
-    input_processing();
-    set_pos();
+    //Limpa as animações
+    animationSteps = [];
+    currentStep = 0;
 
-    
+    //Coloca o grafo na cor padrão
     for (const v of adj_map.keys()) {
         color.set(v, 255);
     }
 
-    // if(minha_id !== id) return;
-    render_graph();
-    await sleep(1000);
-    // if (minha_id !== id) return;
-
     let vis = new Set();
 
-    const bfs = async (x) =>{
+    const bfs = (x) => {
         let queue = [];
         let head = 0;
         vis.add(x);
         queue.push(x);
 
-        //Fila
-        color.set(x, "blue");
-        render_graph();
-        await sleep(1000);
+        //Step animação: Vértice na fila, azul.
+        animationSteps.push([
+            {
+                vertex: x,
+                color: "blue"
+            }
+        ]);
 
         while(head < queue.length){
-            let v = queue[head]; head++;
+            let v = queue[head++];
 
-            //Vértice atual
-
-            color.set(v, "green");
-            render_graph();
-            await sleep(1000);
+            //Step animação: Vértice atual, verde.
+            animationSteps.push([
+                {
+                    vertex: v,
+                    color: "green"
+                }
+            ]);
 
             for(const viz of adj_map.get(v)){
                 if(!vis.has(viz)){
                     vis.add(viz);
                     queue.push(viz);
-                    //Fila
-                    color.set(viz, "blue");
-                    render_graph();
-                    await sleep(1000);
+
+                    //Step animação: Vértice na fila, azul.
+                    animationSteps.push([
+                        {
+                            vertex: viz,
+                            color: "blue"
+                        }
+                    ]);
                 }
             }
-            //Processado
-            color.set(v, "red");
-            render_graph();
-            await sleep(1000);
-        }
-    }
 
+            //Step animação: Vértice finalizado, vermelho.
+            animationSteps.push([
+                {
+                    vertex: v,
+                    color: "red"
+                }
+            ]);
+        }
+    };
 
     for (const x of adj_map.keys()) {
-        // if(minha_id !== id) return;
         if (!vis.has(x)) {
-            await bfs(x);
+            bfs(x);
         }
+    }
+}
+
+function draw() {
+
+    render_graph();
+
+    if (
+        currentStep < animationSteps.length &&
+        millis() - lastUpdate > delay
+    ) {
+
+        let step = animationSteps[currentStep];
+
+        if(Array.isArray(step)){
+
+            for(const change of step){
+                color.set(change.vertex, change.color);
+            }
+
+        }else{
+
+            color.set(step.vertex, step.color);
+
+        }
+
+        currentStep++;
+        lastUpdate = millis();
     }
 }
