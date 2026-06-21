@@ -2,6 +2,7 @@ let Input;
 let adj_map = new Map(); //Map de adjacência
 let pos = new Map(); //Posições dos vértices
 let color = new Map();
+let id = 0;
 
 function setup(){
     let canvas = createCanvas(500,500);
@@ -22,13 +23,17 @@ function setup(){
 
     layoutRadio.selected('random'); // padrão
 
-    Button_draw = createButton('draw');
+    Button_draw = createButton('Draw');
     Button_draw.parent('graph-builder-container');
     Button_draw.mousePressed(draw_graph);
 
     Button_dfs = createButton('DFS');
     Button_dfs.parent('graph-builder-container');
     Button_dfs.mousePressed(draw_dfs);
+
+    Button_bfs = createButton('BFS');
+    Button_bfs.parent('graph-builder-container');
+    Button_bfs.mousePressed(draw_bfs);
 }
 
 function input_processing(){
@@ -266,20 +271,134 @@ function render_graph(){
 
 function draw_graph(){
     input_processing();
+    set_pos();
+
     //Deixa todas as cores iguais.
     for (const v of adj_map.keys()) {
             color.set(v, 255);
     }
-    set_pos();
     render_graph();
 }
 
-function draw_dfs(){
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function draw_dfs(){
+    // id++;
+    // const minha_id = id;
+
     input_processing();
-    //Deixa todas as cores iguais.
-    for (const v of adj_map.keys()) {
-            color.set(v, 255);
-    }
     set_pos();
+
+    
+    for (const v of adj_map.keys()) {
+        color.set(v, 255);
+    }
+
+    // if(minha_id !== id) return;
     render_graph();
+    await sleep(1000);
+    // if (minha_id !== id) return;
+
+    let vis = new Set();
+
+    const dfs = async (v,pai) => {
+        vis.add(v);
+
+        //Vértice atual
+        color.set(v, "green");
+        // if(minha_id !== id) return;
+        render_graph();
+        await sleep(1000);
+        // if (minha_id !== id) return;
+
+        for (const viz of adj_map.get(v)) {
+            if (!vis.has(viz)) {
+                //Em processamento
+                color.set(v, "blue");
+                await dfs(viz,v);
+            }
+        }
+
+        //Finalizado
+        if(pai != null) color.set(pai, "green");
+        color.set(v, "red");
+        // if(minha_id !== id) return;
+        render_graph();
+        await sleep(1000);
+        // if (minha_id !== id) return;
+    };
+
+    for (const x of adj_map.keys()) {
+        // if(minha_id !== id) return;
+        if (!vis.has(x)) {
+            await dfs(x,null);
+        }
+    }
+}
+
+async function draw_bfs(){
+    // id++;
+    // const minha_id = id;
+
+    input_processing();
+    set_pos();
+
+    
+    for (const v of adj_map.keys()) {
+        color.set(v, 255);
+    }
+
+    // if(minha_id !== id) return;
+    render_graph();
+    await sleep(1000);
+    // if (minha_id !== id) return;
+
+    let vis = new Set();
+
+    const bfs = async (x) =>{
+        let queue = [];
+        let head = 0;
+        vis.add(x);
+        queue.push(x);
+
+        //Fila
+        color.set(x, "blue");
+        render_graph();
+        await sleep(1000);
+
+        while(head < queue.length){
+            let v = queue[head]; head++;
+
+            //Vértice atual
+
+            color.set(v, "green");
+            render_graph();
+            await sleep(1000);
+
+            for(const viz of adj_map.get(v)){
+                if(!vis.has(viz)){
+                    vis.add(viz);
+                    queue.push(viz);
+                    //Fila
+                    color.set(viz, "blue");
+                    render_graph();
+                    await sleep(1000);
+                }
+            }
+            //Processado
+            color.set(v, "red");
+            render_graph();
+            await sleep(1000);
+        }
+    }
+
+
+    for (const x of adj_map.keys()) {
+        // if(minha_id !== id) return;
+        if (!vis.has(x)) {
+            await bfs(x);
+        }
+    }
 }
