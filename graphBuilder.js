@@ -60,7 +60,6 @@ function input_processing(){
     pos.clear();
     color.clear();
 
-    // let n = parseInt(graph_input[0].trim()); //Número de vértices
     //console.log(n);
 
     //Separa os vértices de cada aresta, converte de string para inteiro e constroi map de adj.
@@ -89,14 +88,12 @@ function set_pos(){
 
     const layer_vertices = () =>{
         let vis = new Set();
-        // let pai = new Map();
 
         const bfs = (x) =>{
             let queue = [];
             let head = 0;
             vis.add(x);
             queue.push(x);
-            // pai.set(v, null);
 
             //Setar posição -  centro
             pos.set(x, {
@@ -108,7 +105,6 @@ function set_pos(){
                 let v = queue[head]; head++;
                 for(const viz of adj_map.get(v)){
                     if(!vis.has(viz)){
-                        // pai.set(viz, v);
                         vis.add(viz);
                         queue.push(viz);
 
