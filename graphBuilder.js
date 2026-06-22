@@ -60,14 +60,11 @@ function input_processing(){
     pos.clear();
     color.clear();
 
-    //console.log(n);
-
     //Separa os vértices de cada aresta, converte de string para inteiro e constroi map de adj.
     for(let i = 0; i < graph_input.length; i++){ 
         if (graph_input[i].trim() === "") continue; //Trata linhas em branco
 
         let edge = graph_input[i].trim().split(/\s+/); //edge[] = {x1,x2}
-        //console.log(edge);
 
         //Trata caso seja a primeira inserção
         if (!adj_map.has(edge[0])) {
