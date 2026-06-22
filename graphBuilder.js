@@ -67,7 +67,7 @@ function input_processing(){
     for(let i = 0; i < graph_input.length; i++){ 
         if (graph_input[i].trim() === "") continue; //Trata linhas em branco
 
-        let edge = graph_input[i].trim().split(/\s+/).map(Number); //edge[] = {x1,x2}
+        let edge = graph_input[i].trim().split(/\s+/); //edge[] = {x1,x2}
         //console.log(edge);
 
         //Trata caso seja a primeira inserção
