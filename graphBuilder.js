@@ -506,30 +506,81 @@ function draw_bfs(){
 }
 
 function draw_components(){
-    
     //Limpa as animações
     animationSteps = [];
     currentStep = 0;
-
-    let vis = new Set();
-
-    const dfs = (v, cor) => {
-        vis.add(v);
-        color.set(v, cor);
-        for (const viz of adj_map.get(v)) {
-            if (!vis.has(viz)) {
-                dfs(viz, cor);
+    
+    const components_bidirected = () => {
+        // Uses naive dfs to find components
+        let vis = new Set();
+    
+        const dfs = (v, cor) => {
+            vis.add(v);
+            color.set(v, cor);
+            for (const viz of adj_map.get(v)) {
+                if (!vis.has(viz)) {
+                    dfs(viz, cor);
+                }
+            }
+        };
+            
+    
+        for (const x of adj_map.keys()) {
+            let cor = '#' + Math.floor(Math.random()*16777215).toString(16);;
+            if (!vis.has(x)) {
+                dfs(x, cor);
             }
         }
-    };
-        
+    }
 
-    for (const x of adj_map.keys()) {
-        let cor = '#' + Math.floor(Math.random()*16777215).toString(16);;
-        if (!vis.has(x)) {
-            dfs(x, cor);
+    const components_directed = () => {
+        // Uses Tarjan algorithm to find strongly connected components
+        let low = new Map();
+        let id = new Map();
+        let in_stk = new Map();
+        const stk = [];
+        let t = 0;
+
+        for(const x of adj_map.keys()){
+            low.set(x, -1);
+            id.set(x, -1);
+            in_stk.set(x, false);
+        }
+
+        const dfs = (cur) =>{
+            id.set(cur, t);
+            low.set(cur, t); t++;
+            stk.push(cur); in_stk.set(cur, true);
+            for(const nxt of adj_map.get(cur)) {
+                if(id.get(nxt) == -1) {
+                    dfs(nxt);
+                    low.set(cur, Math.min(low.get(cur), low.get(nxt)));
+                }
+                else if(in_stk.get(nxt)){
+                    low.set(cur, Math.min(low.get(cur), id.get(nxt)));
+                }
+            }
+            if(low.get(cur) == id.get(cur)) {
+                let cor = '#' + Math.floor(Math.random()*16777215).toString(16);;
+                while(true) {
+                    let v = stk.pop();
+                    in_stk.set(v, false);
+                    color.set(v, cor);
+                    if(v == cur) break;
+                }
+            }
+        }
+
+        for (const x of adj_map.keys()) {
+            let cor = '#' + Math.floor(Math.random()*16777215).toString(16);;
+            if (id.get(x) == -1) {
+                dfs(x);
+            }
         }
     }
+
+    if(isDirected) components_directed();
+    else components_bidirected();
 }
 
 function draw() {
